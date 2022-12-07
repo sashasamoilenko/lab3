@@ -155,20 +155,6 @@ int main()
     UpP = upper_points(LeftP, RightP, points, n);
     DownP = down_points(LeftP, RightP, points, n);
 
-    UpHull = RightP;
-    for (int i=0; i < upcounter; ++i){
-        int counter = 0;
-        for (int j=0; j < upcounter; ++j){
-            if (not(LeftRotate(UpHull, UpP[i], UpP[j]))){
-                break;
-            }
-            counter += 1;
-        }
-        if (counter = upcounter){
-            drawLine(UpHull.x, UpHull.y, UpP[i].x, UpP[i].y);
-            UpHull = UpP[i];
-        }
-    }
 
    while (window.isOpen())
    {
@@ -192,6 +178,21 @@ int main()
         }
         //c = points[1]+points[2];
         //drawPoint( c.x/2, c.y/2);
+
+       UpHull = RightP;
+       for (int i=0; i < upcounter; ++i){
+           int counter = 0;
+           for (int j=0; j < upcounter; ++j){
+               if (not(LeftRotate(UpHull, UpP[i], UpP[j]))){
+                   break;
+               }
+               counter += 1;
+           }
+           if (counter = upcounter){
+               drawLine(UpHull.x, UpHull.y, UpP[i].x, UpP[i].y);
+               UpHull = UpP[i];
+           }
+       }
 
         window.display();
 

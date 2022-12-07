@@ -19,7 +19,7 @@ public:
     }
 };
 
-std::vector<Point> points;
+std::vector<Point> points, UpP, DownP;
 
 Point operator+ (Point a, Point b){
     return {a.x+b.x,a.y+b.y};
@@ -92,8 +92,6 @@ void drawFuncGraph(float a, float b, float c, float d, float (*func)(float x)) {
     }
 }
 
-
-
 vector<Point> scatter_points(int count) {
     std::vector<Point> result;
     for (int i = 0; i < count; ++i) {
@@ -104,14 +102,38 @@ vector<Point> scatter_points(int count) {
     return result;
 }
 
+vector<Point> upper_points(Point a, Point b, vector<Point> points, int n) {
+    int upcounter = 0;
+    std::vector<Point> result;
+    for (int i = 0; i < n; ++i){
+        if (LeftRotate(a,b,points[i])){
+            result.push_back({points[i].x, points[i].y});
+            upcounter += 1;
+        }
+    }
+    return result;
+}
+
+vector<Point> down_points(Point a, Point b, vector<Point> points, int n) {
+    int downcounter = 0;
+    std::vector<Point> result;
+    for (int i = 0; i < n; ++i){
+        if (LeftRotate(b,a,points[i])){
+            result.push_back({points[i].x, points[i].y});
+            downcounter += 1;
+        }
+    }
+    return result;
+}
+
 float test_func(float x) {
     return sin(2*x*x);
 }
 
 int main()
 {
-    int n=8;
-    Point c, LeftP, RightP;
+    int n=8, upcounter, downcounter;
+    Point c, LeftP, RightP, UpHull, DownHull;
     //float v = 0.01;
 
     //float y = 0;
@@ -127,6 +149,24 @@ int main()
         }
         else if (points[i].x > RightP.x){
             RightP = points[i];
+        }
+    }
+
+    UpP = upper_points(LeftP, RightP, points, n);
+    DownP = down_points(LeftP, RightP, points, n);
+
+    UpHull = RightP;
+    for (int i=0; i < upcounter; ++i){
+        int counter = 0;
+        for (int j=0; j < upcounter; ++j){
+            if (not(LeftRotate(UpHull, UpP[i], UpP[j]))){
+                break;
+            }
+            counter += 1;
+        }
+        if (counter = upcounter){
+            drawLine(UpHull.x, UpHull.y, UpP[i].x, UpP[i].y);
+            UpHull = UpP[i];
         }
     }
 

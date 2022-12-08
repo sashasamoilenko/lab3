@@ -8,7 +8,7 @@ using namespace std;
 float w = 500;
 float h = 500;
 
-sf::RenderWindow window(sf::VideoMode(w, h), "K-22 net client");
+sf::RenderWindow window(sf::VideoMode(w, h), "Hull");
 
 class Point {
 public:
@@ -40,7 +40,7 @@ int f(Point a, Point b)
     return PolarPhi(a) < PolarPhi(b);
 }
 
-int LeftRotate(Point a, Point b, Point c)
+bool LeftRotate(Point a, Point b, Point c)
 {
     Point q = b - a, w = c - b;
     return q.x * w.y > w.x * q.y;
@@ -126,14 +126,56 @@ vector<Point> down_points(Point a, Point b, vector<Point> points, int n) {
     return result;
 }
 
+vector<Point> Graham(vector<Point> points, int n){
+    Point NullPoint;
+    int hull;
+    std::vector<Point> result;
+
+    for(int i = 1; i < n; ++i)
+    {
+        if (points[i].x < points[0].x){
+            swap(points[i],points[0]);
+        }
+        if ((points[i].x == points[0].x) && (points[i].y < points[0].y)){
+            swap(points[i],points[0]);
+        }
+    }
+
+    NullPoint = points[0];
+    for(int i = 0; i < n; ++i){
+        points[i] = points[i] - NullPoint;
+    }
+
+    sort(points.begin()+1,points.end(),f);
+    points.push_back(points[0]);
+    ++n;
+
+    hull = 1;
+    for(int i = 2; i < n; ++i){
+        while( (hull > 0) && not(LeftRotate(points[hull-1],points[hull],points[i]))) {
+            hull -= 1;
+        }
+        hull += 1;
+        points[hull] = points[i];
+    }
+
+    for(int i = 0; i <= hull; ++i){
+        points[i] = points[i] + NullPoint;
+        result.push_back({points[i].x, points[i].y});
+    }
+    return result;
+}
+
 float test_func(float x) {
     return sin(2*x*x);
 }
 
 int main()
 {
-    int n=8, hull, upcounter, downcounter;
+    int n=20, hull, upcounter, downcounter;
     Point NullPoint, c, LeftP, RightP, UpHull, DownHull;
+    vector<Point> HULL;
+
     //float v = 0.01;
 
     //float y = 0;
@@ -156,27 +198,7 @@ int main()
     DownP = down_points(LeftP, RightP, points, n);
 */
 
-    for(int i = 1; i < n; ++i)
-    {
-        if (points[i].x < points[0].x) swap(points[i],points[0]);
-        if ((points[i].x == points[0].x) && (points[i].y < points[0].y)) swap(points[i],points[0]);
-    }
-
-    NullPoint = points[0];
-    for(int i = 0; i < n; ++i){
-        points[i] = points[i] - NullPoint;
-    }
-
-    for(int hull= 1, i = 2; i < n; ++i){
-        while( (hull > 0) && !LeftRotate(points[hull-1],points[hull],points[i])) {
-            hull--;
-        }
-        points[++hull] = points[i];
-    }
-
-    for(int i = 0; i <= hull; ++i){
-        points[i] = points[i] + NullPoint;
-    }
+   HULL = Graham(points, n);
 
    while (window.isOpen())
    {
@@ -198,6 +220,11 @@ int main()
         for(Point p : points) {
             drawPoint(p.x, p.y);
         }
+
+       for (int i=0; i < n; ++i){
+           drawLine(HULL[i].x, HULL[i].y, HULL[i+1].x, HULL[i+1].y);
+       }
+
         //c = points[1]+points[2];
         //drawPoint( c.x/2, c.y/2);
 /*

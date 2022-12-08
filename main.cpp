@@ -43,7 +43,7 @@ int f(Point a, Point b)
 int LeftRotate(Point a, Point b, Point c)
 {
     Point q = b - a, w = c - b;
-    return q.x * w.y - w.x * q.y > 0;
+    return q.x * w.y > w.x * q.y;
 }
 
 void drawPoint(float x, float y) {
@@ -132,14 +132,14 @@ float test_func(float x) {
 
 int main()
 {
-    int n=8, upcounter, downcounter;
-    Point c, LeftP, RightP, UpHull, DownHull;
+    int n=8, hull, upcounter, downcounter;
+    Point NullPoint, c, LeftP, RightP, UpHull, DownHull;
     //float v = 0.01;
 
     //float y = 0;
 
     points = scatter_points(n);
-
+/*
     LeftP = points[1];
     RightP = points[2];
 
@@ -154,7 +154,29 @@ int main()
 
     UpP = upper_points(LeftP, RightP, points, n);
     DownP = down_points(LeftP, RightP, points, n);
+*/
 
+    for(int i = 1; i < n; ++i)
+    {
+        if (points[i].x < points[0].x) swap(points[i],points[0]);
+        if ((points[i].x == points[0].x) && (points[i].y < points[0].y)) swap(points[i],points[0]);
+    }
+
+    NullPoint = points[0];
+    for(int i = 0; i < n; ++i){
+        points[i] = points[i] - NullPoint;
+    }
+
+    for(int hull= 1, i = 2; i < n; ++i){
+        while( (hull > 0) && !LeftRotate(points[hull-1],points[hull],points[i])) {
+            hull--;
+        }
+        points[++hull] = points[i];
+    }
+
+    for(int i = 0; i <= hull; ++i){
+        points[i] = points[i] + NullPoint;
+    }
 
    while (window.isOpen())
    {
@@ -178,7 +200,7 @@ int main()
         }
         //c = points[1]+points[2];
         //drawPoint( c.x/2, c.y/2);
-
+/*
        UpHull = RightP;
        for (int i=0; i < upcounter; ++i){
            int counter = 0;
@@ -193,7 +215,7 @@ int main()
                UpHull = UpP[i];
            }
        }
-
+*/
         window.display();
 
     //    y += 0.01;

@@ -176,7 +176,8 @@ vector<Point> Graham(vector<Point> points, int n){
 }
 
 vector<Point> Endr_Jarv(vector<Point> points, int n) {
-    Point hull1, hull2;
+    Point hull;
+    int number;
     std::vector<Point> up_points, down_points, result;
 
     sort(points.begin(),points.end(),x_coord);
@@ -184,7 +185,7 @@ vector<Point> Endr_Jarv(vector<Point> points, int n) {
     up_points.push_back({points[0].x, points[0].y});
     down_points.push_back({points[n-1].x, points[n-1].y});
     for (int i=1; i < n-1; ++i){
-        if (LeftRotate(points[0],points[i],points[n-1])){
+        if (LeftRotate(points[0],points[n-1],points[i])){
             up_points.push_back({points[i].x, points[i].y});
         }
         else down_points.push_back({points[i].x, points[i].y});
@@ -193,20 +194,22 @@ vector<Point> Endr_Jarv(vector<Point> points, int n) {
     down_points.push_back({points[0].x, points[0].y});
 
     result.push_back({points[0].x, points[0].y});
-    hull1 = points[0];
-    for (int i=1; i<up_points.size(); ++i){
-        if (not(LeftRotate(points[0],points[i],points[n-1])))
-    }
-
+    hull = up_points[0];
+    number = 0;
 
     while (hull != points[n-1]){
-         for (int i=1; i<up_points.size(); ++i){
-             if (not(LeftRotate(points[0],points[i],points[n-1])))
+         int next = (number + 1) % up_points.size();
+         for (int i=0; i < up_points.size(); ++i){
+             if ((LeftRotate(up_points[number],up_points[next],up_points[i]))){
+                 next = i;
+             }
          }
+        number = next;
+        hull = up_points[next];
+        result.push_back({up_points[next].x, up_points[next].y});
     }
 
-
-
+    return result;
 }
 
 float test_func(float x) {
@@ -241,7 +244,8 @@ int main()
     DownP = down_points(LeftP, RightP, points, n);
 */
 
-   HULL = Graham(points, n);
+   //HULL = Graham(points, n);
+    HULL = Endr_Jarv(points, n);
 
    while (window.isOpen())
    {
@@ -293,29 +297,3 @@ int main()
 
     return 0;
 }
- /*
-#include <SFML/Graphics.hpp>
-
-int main()
-{
-    sf::RenderWindow window(sf::VideoMode(200, 200), "SFML works!");
-    sf::CircleShape shape(100.f);
-    shape.setFillColor(sf::Color::Green);
-
-    while (window.isOpen())
-    {
-        sf::Event event;
-        while (window.pollEvent(event))
-        {
-            if (event.type == sf::Event::Closed)
-                window.close();
-        }
-
-        window.clear();
-        window.draw(shape);
-        window.display();
-    }
-
-    return 0;
-}
-*/

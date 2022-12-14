@@ -14,7 +14,7 @@ class Point {
 public:
     float x;
     float y;
-    double len2() const{
+    double rho() const{
         return x*x + y*y;
     }
 };
@@ -33,11 +33,21 @@ double PolarPhi(Point a){
     return atan2(1.0*a.y,1.0*a.x);
 }
 
-int f(Point a, Point b)
+bool f(Point a, Point b)
 {
     if (abs(PolarPhi(a) - PolarPhi(b)) == 0)
-        return a.len2() < b.len2();
+        return a.rho() < b.rho();
     return PolarPhi(a) < PolarPhi(b);
+}
+
+bool x_coord(Point a, Point b)
+{
+    return a.x < b.x;
+}
+
+bool operator != (Point a, Point b)
+{
+    return !(a.x == b.x && a.y == b.y);
 }
 
 bool LeftRotate(Point a, Point b, Point c)
@@ -148,7 +158,6 @@ vector<Point> Graham(vector<Point> points, int n){
 
     sort(points.begin()+1,points.end(),f);
     points.push_back(points[0]);
-    ++n;
 
     hull = 1;
     for(int i = 2; i < n; ++i){
@@ -164,6 +173,40 @@ vector<Point> Graham(vector<Point> points, int n){
         result.push_back({points[i].x, points[i].y});
     }
     return result;
+}
+
+vector<Point> Endr_Jarv(vector<Point> points, int n) {
+    Point hull1, hull2;
+    std::vector<Point> up_points, down_points, result;
+
+    sort(points.begin(),points.end(),x_coord);
+
+    up_points.push_back({points[0].x, points[0].y});
+    down_points.push_back({points[n-1].x, points[n-1].y});
+    for (int i=1; i < n-1; ++i){
+        if (LeftRotate(points[0],points[i],points[n-1])){
+            up_points.push_back({points[i].x, points[i].y});
+        }
+        else down_points.push_back({points[i].x, points[i].y});
+    }
+    up_points.push_back({points[n-1].x, points[n-1].y});
+    down_points.push_back({points[0].x, points[0].y});
+
+    result.push_back({points[0].x, points[0].y});
+    hull1 = points[0];
+    for (int i=1; i<up_points.size(); ++i){
+        if (not(LeftRotate(points[0],points[i],points[n-1])))
+    }
+
+
+    while (hull != points[n-1]){
+         for (int i=1; i<up_points.size(); ++i){
+             if (not(LeftRotate(points[0],points[i],points[n-1])))
+         }
+    }
+
+
+
 }
 
 float test_func(float x) {

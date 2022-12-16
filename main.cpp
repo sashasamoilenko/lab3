@@ -19,7 +19,7 @@ public:
     }
 };
 
-std::vector<Point> points, UpP, DownP;
+std::vector<Point> points;
 
 Point operator+ (Point a, Point b){
     return {a.x+b.x,a.y+b.y};
@@ -73,65 +73,12 @@ void drawLine(float x1, float y1, float x2, float y2) {
     window.draw(line, 2, sf::Lines);
 }
 
-float scale_val(float a, float b, float c, float d, float t) {
-    // [a,b] => [c,d]
-    return (t-a)/(b-a)*(d-c) + c;
-}
-
-void drawFuncGraph(float a, float b, float c, float d, float (*func)(float x)) {
-    float x = a;
-    float y;
-    float dh = (b-a)/500;
-
-    float x1 = scale_val(a, b, 0, w, x);
-
-    y=func(x);
-    float y1 = scale_val(c, d, 0, h, y);
-
-    x += dh;
-    while (x <= b) {
-        float x2 = scale_val(a, b, 0, w, x);
-        y=func(x);
-        float y2 = scale_val(c, d, 0, h, y);
-
-        drawLine(x1, y1, x2, y2);
-        x1 = x2;
-        y1 = y2;
-
-        x += dh;
-    }
-}
-
 vector<Point> scatter_points(int count) {
     std::vector<Point> result;
     for (int i = 0; i < count; ++i) {
         float x = ((float)rand()) / RAND_MAX * w;
         float y = ((float)rand()) / RAND_MAX * h;
         result.push_back({x,y});
-    }
-    return result;
-}
-
-vector<Point> upper_points(Point a, Point b, vector<Point> points, int n) {
-    int upcounter = 0;
-    std::vector<Point> result;
-    for (int i = 0; i < n; ++i){
-        if (LeftRotate(a,b,points[i])){
-            result.push_back({points[i].x, points[i].y});
-            upcounter += 1;
-        }
-    }
-    return result;
-}
-
-vector<Point> down_points(Point a, Point b, vector<Point> points, int n) {
-    int downcounter = 0;
-    std::vector<Point> result;
-    for (int i = 0; i < n; ++i){
-        if (LeftRotate(b,a,points[i])){
-            result.push_back({points[i].x, points[i].y});
-            downcounter += 1;
-        }
     }
     return result;
 }
@@ -182,28 +129,43 @@ vector<Point> Endr_Jarv(vector<Point> points, int n) {
 
     sort(points.begin(),points.end(),x_coord);
 
-    up_points.push_back({points[0].x, points[0].y});
-    down_points.push_back({points[n-1].x, points[n-1].y});
+    down_points.push_back({points[0].x, points[0].y});
+    up_points.push_back({points[n-1].x, points[n-1].y});
     for (int i=1; i < n-1; ++i){
         if (LeftRotate(points[0],points[n-1],points[i])){
-            up_points.push_back({points[i].x, points[i].y});
+            down_points.push_back({points[i].x, points[i].y});
         }
-        else down_points.push_back({points[i].x, points[i].y});
+        else up_points.push_back({points[i].x, points[i].y});
     }
-    up_points.push_back({points[n-1].x, points[n-1].y});
-    down_points.push_back({points[0].x, points[0].y});
+    down_points.push_back({points[n-1].x, points[n-1].y});
+    up_points.push_back({points[0].x, points[0].y});
 
     result.push_back({points[0].x, points[0].y});
-    hull = up_points[0];
+    hull = down_points[0];
     number = 0;
 
     while (hull != points[n-1]){
          int next = (number + 1) % up_points.size();
-         for (int i=0; i < up_points.size(); ++i){
-             if ((LeftRotate(up_points[number],up_points[next],up_points[i]))){
+         for (int i=0; i < down_points.size(); ++i){
+             if ((LeftRotate(down_points[number],down_points[next],down_points[i]))){
                  next = i;
              }
          }
+        number = next;
+        hull = down_points[next];
+        result.push_back({down_points[next].x, down_points[next].y});
+    }
+
+    hull = up_points[n-1];
+    number = 0;
+
+    while (hull != points[0]){
+        int next = (number + 1) % up_points.size();
+        for (int i=0; i < up_points.size(); ++i){
+            if ((LeftRotate(up_points[number],up_points[next],up_points[i]))){
+                next = i;
+            }
+        }
         number = next;
         hull = up_points[next];
         result.push_back({up_points[next].x, up_points[next].y});
@@ -212,39 +174,15 @@ vector<Point> Endr_Jarv(vector<Point> points, int n) {
     return result;
 }
 
-float test_func(float x) {
-    return sin(2*x*x);
-}
 
 int main()
 {
-    int n=20, hull, upcounter, downcounter;
-    Point NullPoint, c, LeftP, RightP, UpHull, DownHull;
+    int n=30;
     vector<Point> HULL;
 
-    //float v = 0.01;
-
-    //float y = 0;
-
     points = scatter_points(n);
-/*
-    LeftP = points[1];
-    RightP = points[2];
 
-    for (int i=0; i < n; ++i){
-        if (points[i].x < LeftP.x){
-            LeftP = points[i];
-        }
-        else if (points[i].x > RightP.x){
-            RightP = points[i];
-        }
-    }
-
-    UpP = upper_points(LeftP, RightP, points, n);
-    DownP = down_points(LeftP, RightP, points, n);
-*/
-
-   //HULL = Graham(points, n);
+     //HULL = Graham(points, n);
     HULL = Endr_Jarv(points, n);
 
    while (window.isOpen())
@@ -260,10 +198,6 @@ int main()
         }
         window.clear();
 
-   //     drawLine(0, y, w, y);
-
-    //    drawFuncGraph(-5,5, -2, 2, test_func);
-
         for(Point p : points) {
             drawPoint(p.x, p.y);
         }
@@ -272,27 +206,8 @@ int main()
            drawLine(HULL[i].x, HULL[i].y, HULL[i+1].x, HULL[i+1].y);
        }
 
-        //c = points[1]+points[2];
-        //drawPoint( c.x/2, c.y/2);
-/*
-       UpHull = RightP;
-       for (int i=0; i < upcounter; ++i){
-           int counter = 0;
-           for (int j=0; j < upcounter; ++j){
-               if (not(LeftRotate(UpHull, UpP[i], UpP[j]))){
-                   break;
-               }
-               counter += 1;
-           }
-           if (counter = upcounter){
-               drawLine(UpHull.x, UpHull.y, UpP[i].x, UpP[i].y);
-               UpHull = UpP[i];
-           }
-       }
-*/
-        window.display();
+       window.display();
 
-    //    y += 0.01;
     }
 
     return 0;
